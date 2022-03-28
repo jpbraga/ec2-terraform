@@ -1,8 +1,7 @@
 #!/bin/bash
+sudo yum update -y
 sudo yum install -y amazon-linux-extras
 sudo yum install -y httpd httpd-tools mod_ssl 
-
-sudo systemctl enable httpd 
 
 echo "Configuring the log_format for apache"
 sudo touch /etc/httpd/conf.modules.d/00-log_format.conf
@@ -34,8 +33,11 @@ cat <<"EOF" >/var/www/html/index.html
 </html>
 EOF
 
-
+echo "Starting apache..."
 sudo systemctl start httpd
+
+echo "Enabling apache service to start at instance reboot..."
+sudo systemctl enable httpd 
 
 echo "Installing Cloudwatch agent..."
 sudo yum install -y amazon-cloudwatch-agent
@@ -57,7 +59,7 @@ cat <<"EOF" >>/opt/aws/amazon-cloudwatch-agent/etc/config.json
 				"collect_list": [
 					{
 						"file_path": "/var/log/httpd/ws.access_log",
-						"log_group_name": "nginx-webserver",
+						"log_group_name": "apache-webserver",
 						"log_stream_name": "{instance_id}",
 						"retention_in_days": 7
 					}

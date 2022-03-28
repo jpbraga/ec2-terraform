@@ -65,7 +65,7 @@ resource "aws_cloudwatch_metric_alarm" "ec2_disk_alarm" {
   }
 }
 
-resource "aws_cloudwatch_composite_alarm" "alb_composite_alarm" {
+resource "aws_cloudwatch_composite_alarm" "ec2_composite_alarm" {
   alarm_description = "Alarme de utilizacao de infra para a instância ec2 ${var.instance_id}"
   alarm_name        = "ec2-${var.instance_id}-composite-alarm"
 

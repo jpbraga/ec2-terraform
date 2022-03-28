@@ -28,6 +28,6 @@ variable "key_name" {
 }
 
 variable "enable_http" {
-    type = boolean
+    type = bool
 }
 

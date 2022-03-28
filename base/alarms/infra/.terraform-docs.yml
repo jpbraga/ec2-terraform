@@ -1,0 +1,49 @@
+formatter: "markdown table" # this is required
+
+version: ""
+
+header-from: main.tf
+footer-from: ""
+
+recursive:
+  enabled: false
+  path: base
+
+sections:
+  hide: []
+  show: []
+
+
+content: ""
+
+output:
+  file: "README.md"
+  mode: replace
+  template: |-
+    <!-- BEGIN_TF_DOCS -->
+    {{ .Content }}
+    ##### Documento gerado utilizando "terraform-docs -c .terraform-docs.yml ."
+    <!-- END_TF_DOCS -->    
+
+output-values:
+  enabled: false
+  from: ""
+
+sort:
+  enabled: true
+  by: name
+
+settings:
+  anchor: true
+  color: true
+  default: true
+  description: false
+  escape: true
+  hide-empty: true
+  html: true
+  indent: 2
+  lockfile: true
+  read-comments: true
+  required: true
+  sensitive: true
+  type: true

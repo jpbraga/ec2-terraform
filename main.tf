@@ -14,7 +14,7 @@
  * * Erros 4XX (soma)
  * * Erros 5XX (soma)
  * * Requisicoes com sucesso (soma)
- * * Tempo de requisição em milisegundos
+ * * Tempo de requisição em microsegundos
  *
  * # Utilização
  *  ```hcl
@@ -30,8 +30,19 @@
  *  alarm_disk_used_threshold        = "70"
  *  alarm_networkout_threshold       = "4800000000" #4.8Gb de 5Gb que uma instancia t2.micro possui
  *  infra_alarm_sns_emails           = ["jp.am.braga@gmail.com"]
+ *
+ *  sla_response_time_threshold       = 500
+ *  sla_success_threshold            = 95
+ *  sla_sns_emails                   = ["jp.am.braga@gmail.com"]
+ * 
+ *  slo_response_time_threshold       = 300
+ *  slo_success_threshold            = 99
+ *  slo_sns_emails                   = ["jp.am.braga@gmail.com"]
  * }
  *  ```
+ *
+ * # Obs:
+ * * Após o setup inicial um ami pode ser feito a partir da instância EC2 criada por este terraform e utilizado como imagem base para a instância eliminando assim o tempo de startup.
  */
 
 module "ec2_instance" {
@@ -43,6 +54,7 @@ module "ec2_instance" {
   env                = var.env
   key_name           = var.key_name
   enable_http        = var.enable_http
+}
 
 module "ec2_infra_alarms" {
   source                     = "./base/alarms/infra"
@@ -55,4 +67,22 @@ module "ec2_infra_alarms" {
   depends_on = [
     module.ec2_instance
   ]
+}
+
+module "ec2_alarms_slo" {
+  source                 = "./base/alarms/apache"
+  instance_id            = module.ec2_instance.instance_id
+  alarm_intent           = "SLO"
+  response_time_threshold = var.slo_response_time_threshold
+  success_threshold      = var.slo_success_threshold
+  sns_emails             = var.slo_sns_emails
+}
+
+module "ec2_alarms_sla" {
+  source                 = "./base/alarms/apache"
+  instance_id            = module.ec2_instance.instance_id
+  alarm_intent           = "SLA"
+  response_time_threshold = var.sla_response_time_threshold
+  success_threshold      = var.sla_success_threshold
+  sns_emails             = var.sla_sns_emails
 }

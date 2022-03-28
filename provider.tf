@@ -18,7 +18,7 @@ provider "aws" {
     tags = {
       Environment = var.env
       Owner       = "Team-1"
-      Service     = "WebServiceNginx"
+      Service     = "WebService"
       Repository  = "github.com/jpbraga/desafio-stone"
       Type        = "estrategia-infra"
       Terraform   = "true"

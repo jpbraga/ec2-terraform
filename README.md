@@ -30,8 +30,19 @@ module "ec2" {
  alarm_disk_used_threshold        = "70"
  alarm_networkout_threshold       = "4800000000" #4.8Gb de 5Gb que uma instancia t2.micro possui
  infra_alarm_sns_emails           = ["jp.am.braga@gmail.com"]
+
+ sla_response_time_threshold       = 500
+ sla_success_threshold            = 95
+ sla_sns_emails                   = ["jp.am.braga@gmail.com"]
+
+ slo_response_time_threshold       = 300
+ slo_success_threshold            = 99
+ slo_sns_emails                   = ["jp.am.braga@gmail.com"]
 }
  ```
+
+# Obs:
+* Após o setup inicial um ami pode ser feito a partir da instância EC2 criada por este terraform e utilizado como imagem base para a instância eliminando assim o tempo de startup.
 
 ## Requirements
 
@@ -43,6 +54,8 @@ module "ec2" {
 
 | Name | Source | Version |
 |------|--------|---------|
+| <a name="module_ec2_alarms_sla"></a> [ec2\_alarms\_sla](#module\_ec2\_alarms\_sla) | ./base/alarms/apache | n/a |
+| <a name="module_ec2_alarms_slo"></a> [ec2\_alarms\_slo](#module\_ec2\_alarms\_slo) | ./base/alarms/apache | n/a |
 | <a name="module_ec2_infra_alarms"></a> [ec2\_infra\_alarms](#module\_ec2\_infra\_alarms) | ./base/alarms/infra | n/a |
 | <a name="module_ec2_instance"></a> [ec2\_instance](#module\_ec2\_instance) | ./base/instance | n/a |
 
@@ -54,11 +67,18 @@ module "ec2" {
 | <a name="input_alarm_disk_used_threshold"></a> [alarm\_disk\_used\_threshold](#input\_alarm\_disk\_used\_threshold) | Porcentagem limite da utilizacao do disco da instancia EC2. | `number` | n/a | yes |
 | <a name="input_alarm_mem_used_percent_threshold"></a> [alarm\_mem\_used\_percent\_threshold](#input\_alarm\_mem\_used\_percent\_threshold) | Porcentagem limite da utilizacao de memoria da instancia EC2. | `number` | n/a | yes |
 | <a name="input_alarm_networkout_threshold"></a> [alarm\_networkout\_threshold](#input\_alarm\_networkout\_threshold) | Limite absoluto em bytes da utilizacao do Network Out da instancia EC2. | `number` | n/a | yes |
+| <a name="input_enable_http"></a> [enable\_http](#input\_enable\_http) | (Opcional) Habilita requisições na porta 80. | `bool` | `false` | no |
 | <a name="input_env"></a> [env](#input\_env) | Ambiente para o qual a instância será criada. Valores esparados para este são: "qa","sandbox" ou "prod". | `string` | n/a | yes |
-| <a name="input_infra_alarm_sns_emails"></a> [infra\_alarm\_sns\_emails](#input\_infra\_alarm\_sns\_emails) | Lista de e-mails para receberem notificacoes de alarmes relacionados a infraestrutura. | `list(string)` | `[]` | no |
+| <a name="input_infra_alarm_sns_emails"></a> [infra\_alarm\_sns\_emails](#input\_infra\_alarm\_sns\_emails) | (Opcional Lista de e-mails para receberem notificacoes de alarmes relacionados a infraestrutura. | `list(string)` | `[]` | no |
 | <a name="input_key_name"></a> [key\_name](#input\_key\_name) | (Opcional) Nome de um key-pair existente para ser utilizado para acesso à instância. Caso seja omitido, um novo key-pair será criado. | `string` | `""` | no |
 | <a name="input_name"></a> [name](#input\_name) | Nome da instância. | `string` | n/a | yes |
 | <a name="input_public_subnet_id"></a> [public\_subnet\_id](#input\_public\_subnet\_id) | Id da subnet pública aonde a instância será criada. | `string` | n/a | yes |
+| <a name="input_sla_response_time_threshold"></a> [sla\_response\_time\_threshold](#input\_sla\_response\_time\_threshold) | SLA - Limite para o tempo de resposta do webserver em microsegundos. | `number` | n/a | yes |
+| <a name="input_sla_sns_emails"></a> [sla\_sns\_emails](#input\_sla\_sns\_emails) | Lista de e-mails para receberem notificacoes de alarmes relacionados ao SLA. | `list(string)` | n/a | yes |
+| <a name="input_sla_success_threshold"></a> [sla\_success\_threshold](#input\_sla\_success\_threshold) | SLA - Limite da taxa de sucesso. | `number` | n/a | yes |
+| <a name="input_slo_response_time_threshold"></a> [slo\_response\_time\_threshold](#input\_slo\_response\_time\_threshold) | SLO - Limite para o tempo de resposta do webserver em microsegundos. | `number` | n/a | yes |
+| <a name="input_slo_sns_emails"></a> [slo\_sns\_emails](#input\_slo\_sns\_emails) | Lista de e-mails para receberem notificacoes de alarmes relacionados ao SLO. | `list(string)` | n/a | yes |
+| <a name="input_slo_success_threshold"></a> [slo\_success\_threshold](#input\_slo\_success\_threshold) | SLO - Limite da taxa de sucesso. | `number` | n/a | yes |
 | <a name="input_ssh_ip_cidr_blocks"></a> [ssh\_ip\_cidr\_blocks](#input\_ssh\_ip\_cidr\_blocks) | (Opcional) Lista de IPs que poderão acessar a instância via SSH. | `list(string)` | `[]` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | Id da VPC em que a instância será criada. | `string` | n/a | yes |
 
