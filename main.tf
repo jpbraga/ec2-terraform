@@ -42,7 +42,7 @@
  *  ```
  *
  * # Obs:
- * * Após o setup inicial um ami pode ser feito a partir da instância EC2 criada por este terraform e utilizado como imagem base para a instância eliminando assim o tempo de startup.
+ * * O serviço do apache será configurado para responder na porta 443 com um self-signed certificate e redirecionar o trafego da porta 80 para a 443. Para que o redirect possa funcionar corretamente o parametro enable_http deve ser habilitado.
  */
 
 module "ec2_instance" {
