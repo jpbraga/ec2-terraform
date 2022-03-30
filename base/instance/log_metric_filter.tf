@@ -21,7 +21,6 @@ resource "aws_cloudwatch_log_metric_filter" "apache_total_requests" {
     name          = "TotalRequests"
     namespace     = "Apache"
     value         = 1
-    default_value = 0
     unit          = "Count"
   }
 }
@@ -35,7 +34,6 @@ resource "aws_cloudwatch_log_metric_filter" "apache_successful_requests" {
     name          = "SucessfulRequests"
     namespace     = "Apache"
     value         = 1
-    default_value = 0
     unit          = "Count"
   }
 }
@@ -49,7 +47,6 @@ resource "aws_cloudwatch_log_metric_filter" "apache_5XX_requests" {
     name          = "5XX"
     namespace     = "Apache"
     value         = 1
-    default_value = 0
     unit          = "Count"
   }
 }
@@ -63,7 +60,6 @@ resource "aws_cloudwatch_log_metric_filter" "apache_4XX_requests" {
     name          = "4XX"
     namespace     = "Apache"
     value         = 1
-    default_value = 0
     unit          = "Count"
   }
 }

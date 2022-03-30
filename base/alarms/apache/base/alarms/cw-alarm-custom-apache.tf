@@ -17,7 +17,7 @@ resource "aws_cloudwatch_metric_alarm" "apache_request_success_rate_alarm" {
   evaluation_periods        = var.success_rate_evaluation_periods
   threshold                 = var.success_threshold
   alarm_description         = "${var.alarm_intent} - Taxa de sucesso menor que ${var.success_threshold}%"
-  treat_missing_data        = "ignore"
+  treat_missing_data        = "notBreaching"
   insufficient_data_actions = []
 
   metric_query {

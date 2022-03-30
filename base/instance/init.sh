@@ -3,15 +3,6 @@ sudo yum update -y
 sudo yum install -y amazon-linux-extras
 sudo yum install -y httpd httpd-tools mod_ssl 
 
-echo "Configuring the log_format for apache"
-sudo touch /etc/httpd/conf.modules.d/00-log_format.conf
-sudo chmod -R 777 /etc/httpd/conf.modules.d/00-log_format.conf
-cat <<"EOF" >/etc/httpd/conf.modules.d/00-log_format.conf
-LogFormat "%t %a \"%r\" %>s %D" webserver
-CustomLog "logs/ws.access_log" webserver
-EOF
-
-
 echo "Overriding the default Apache page to eliminate 403 erros..."
 sudo touch /var/www/html/index.html
 sudo chmod -R 777 /var/www/html/index.html
@@ -31,6 +22,70 @@ cat <<"EOF" >/var/www/html/index.html
 		</div>
 	</body>
 </html>
+EOF
+
+echo "Getting instance hostname from metadata..."
+HOSTNAME=$(curl -s  http://169.254.169.254/latest/meta-data/public-hostname)
+
+echo "Generate CA private key"
+sudo openssl genrsa -out ca.key 2048
+
+echo "Generate CSR"
+sudo openssl req -new -key ca.key -out ca.csr -subj "/C=BR/ST=SP/L=SP/O=stone/OU=TI/CN=${HOSTNAME}"
+
+echo "Generate Certificate"
+sudo openssl x509 -req -days 365 -in ca.csr -signkey ca.key -out ca.crt
+
+echo "Copying certificates to the pki folders..."
+sudo cp ca.crt /etc/pki/tls/certs
+sudo cp ca.key /etc/pki/tls/private/ca.key
+sudo cp ca.csr /etc/pki/tls/private/ca.csr
+
+echo "Configuring ssl, redirect and log format..."
+sudo chmod 777 /etc/httpd/conf.d/ssl.conf
+cat <<EOF > /etc/httpd/conf.d/ssl.conf
+Listen 443 https
+SSLPassPhraseDialog exec:/usr/libexec/httpd-ssl-pass-dialog
+SSLSessionCache         shmcb:/run/httpd/sslcache(512000)
+SSLSessionCacheTimeout  300
+SSLRandomSeed startup file:/dev/urandom  256
+SSLRandomSeed connect builtin
+SSLCryptoDevice builtin
+
+NameVirtualHost *:80
+<VirtualHost *:80>
+	ServerName ${HOSTNAME}
+   	Redirect / https://${HOSTNAME}
+</VirtualHost>
+
+<VirtualHost _default_:443>
+
+ServerName ${HOSTNAME}
+
+ErrorLog logs/ssl_error_log
+TransferLog logs/ssl_access_log
+LogLevel warn
+SSLEngine on
+SSLProtocol all -SSLv3
+SSLCipherSuite HIGH:MEDIUM:!aNULL:!MD5:!SEED:!IDEA
+SSLCertificateFile /etc/pki/tls/certs/ca.crt
+SSLCertificateKeyFile /etc/pki/tls/private/ca.key
+<Files ~ "\.(cgi|shtml|phtml|php3?)$">
+    SSLOptions +StdEnvVars
+</Files>
+<Directory "/var/www/cgi-bin">
+    SSLOptions +StdEnvVars
+</Directory>
+BrowserMatch "MSIE [2-5]" \
+	nokeepalive ssl-unclean-shutdown \
+	downgrade-1.0 force-response-1.0
+EOF
+
+cat <<"EOF" >> /etc/httpd/conf.d/ssl.conf
+CustomLog logs/ssl_request_log \
+	"%t %a \"%r\" %>s %D"
+
+</VirtualHost>
 EOF
 
 echo "Starting apache..."
@@ -58,7 +113,7 @@ cat <<"EOF" >>/opt/aws/amazon-cloudwatch-agent/etc/config.json
 			"files": {
 				"collect_list": [
 					{
-						"file_path": "/var/log/httpd/ws.access_log",
+						"file_path": "/var/log/httpd/ssl_access_log",
 						"log_group_name": "apache-webserver",
 						"log_stream_name": "{instance_id}",
 						"retention_in_days": 7
